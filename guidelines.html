@@ -1,0 +1,602 @@
+<h1>Introduction</h1>
+<p>This list is intended to be a list of additional or more technical things to look for when auditing extremely high value applications. The applications may involve operational security for involved actors (such as law enforcement research), extremely valuable transactions (such as a Stock Trading Application), societal issues that could open users to physical harassment (such as a Gay Dating Application), or technologies designed to be used by journalists operating inside repressive countries.</p>
+<p>It is an <strong>advanced</strong> list - meaning entry level issues such as application logic bypasses, common web vulnerabilities such as XSS and SQLi, or lower level vulnerabilities such as memory corruption are explicitly not covered. It is assumed that the reader is aware of these and similar vulnerabilities and is well trained in their search, exploitation, and remediation.</p>
+<p>A good example of the type of analysis to strive for can be shown in Jacob Appelbaum's analysis of UltraSurf: <a href="https://media.torproject.org/misc/2012-04-16-ultrasurf-analysis.pdf">https://media.torproject.org/misc/2012-04-16-ultrasurf-analysis.pdf</a> </p>
+<h1>The Stuff</h1>
+<h2>Documentation</h2>
+<ul>
+<li>Threat Model<ul>
+<li>If a project has not documented what they intend to protect themselves from, and what they do not intend to protect themselves from - they probably haven't given much thought to what attacks may be possible to defend against and what attacks are not.<br />
+</li>
+<li>For example: Tor explicitly does not defend against end-to-end correlation: if an attacker can monitor a user (e.g. a user in the US) and the site they are connecting to (e.g. a site hosted at Amazon EC2 East Coast) it's assumed it's game over, and the attacker can de-anonymize the user. No complicated defenses will be taken. For this reason, tagging attacks are also not defended against.</li>
+<li>Some common threat model questions:<ul>
+<li>Do you intend to protect against forensic analysis of a disk to determine what activities a user has participated in using the software?</li>
+<li>Do you intend to protect against forensic analysis of a disk to determine if a user had installed the software (and subsequently uninstalled it)?</li>
+<li>Do you intend to disguise the use of the software to an adversary who can monitor the user's network connection?<ul>
+<li>If they say "Yes" they are almost certainly unable to accomplish this, and you should be able to find a few ways to break this.</li>
+</ul>
+</li>
+<li>Do you intend to disguise the activities of a user using the software from an adversary who can monitor the user's network connection?</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Protocol Specification<ul>
+<li>If an application uses a custom protocol, it should be documented to the level that you would feel comfortable producing an interoperating client from <em>only</em> the specification with no reference to the code. Code is not specification. Code comments are not specification.</li>
+<li>Any deviation from the protocol specification (even if superficial or without security effect) should be noted</li>
+<li>Anytime the application accepts data that deviates from the specification should probably be noted.</li>
+<li>Anytime the application does not accept data valid according to the specification should also probably be noted. <ul>
+<li>These last two are why we have HTML/SSL problems on the Internet: </li>
+<li>Web browsers will happily display documents even if they have no opening &lt;html&gt; or &lt;body&gt; tags, &lt;b&gt;&lt;i&gt;intermixed&lt;/b&gt;&lt;/i&gt; tags, and &lt;u&gt;dangling tags.  Incredible complexity was introduced in these loose parsers; upgrading them is fraught with furious peril, holding back security fixes.</li>
+<li>In SSL's case, it states if you receive a version number greater than what you can handle, or an extension you don't recognize, you should be able to handle it gracefully. But many products don't, and thus web browsers perform a fallback to a lesser protocol version, and no extensions to accommodate these products. This allows an attacker to silently downgrade your SSL protocol version!</li>
+<li>Thus, the application should be able to gracefully handle any way data can be formatted according to the spec; and that it generally should not loosely accept incorrectly formatted data, <em>especially</em> when it is the first or major implementation of the protocol.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TODOs, FIXMEs, HACKs, or XXXs<ul>
+<li>If code contains comments to these effects, the code should be investigated thoroughly (duh) and there should probably be a corresponding issue in the project's bugtracker.</li>
+</ul>
+</li>
+<li>Does the software provide extremely simple, easy-to-understand instructions for use, discouraging bad practices and performing necessary verification checks?</li>
+<li>Are risks documented to users? <ul>
+<li>Does the software take efforts to explain what the product does and doesn't provide, and under what environments (e.g. corporate) the software grants no protection?<ul>
+<li>Examples: Chrome Incognito mode, Tor</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Does the project conduct usability studies about how users actually use the software and whether they put themselves at risk by doing so?</li>
+</ul>
+<h2>Service Administration</h2>
+<ul>
+<li>Do the administrators of the system enjoy a privileged position in relation to other users of the product or protocol?<ul>
+<li>Are they able to perform additional traffic analysis on users?</li>
+<li>Do the protocols break down when a member of the protocol is also the service administrator?</li>
+<li>This position may be enjoyed by attackers who can monitor or subvert the administrative network (internally or externally).</li>
+</ul>
+</li>
+<li>With what ease can the system deliver backdoored or malicious code to users?</li>
+<li>What systems are in place to restrict privileged individuals...<ul>
+<li>From fully subverting the system?</li>
+<li>From gaining access to user account information?</li>
+<li>From gaining access to web server logs?</li>
+</ul>
+</li>
+<li>What technical and policy-based access control mechanisms are in place to segregate differently-privileged users?</li>
+<li>How is the service hosted, and what additional privileged users are granted access by the choice of hosting?<br />
+<ul>
+<li>What do they gain access to and what are they restricted from?</li>
+</ul>
+</li>
+<li>What is the application 'stack' of the service, including Operating System, language, frameworks, libraries, and modules? Are they publically disclosed? How popular/secure are they?</li>
+<li>What additional services are running on machines that see privileged user information?</li>
+<li>In what jurisdiction is the service hosted?</li>
+</ul>
+<h2>Fingerprinting</h2>
+<ul>
+<li>Any permanent settings unique to a client (or customizable) that persist may be used to track users across networks. Even in the case where a setting does not uniquely identify a user, it will partition the user into a subset of all users, reducing all users' anonymity.<ul>
+<li>Some examples to illustrate this topic:<ul>
+<li>A user may enable the Do Not Track header. The user visits a website, and the attacker observes they have set the header. When attempting to track this user in the future, they can assume the user will still have the header set.</li>
+<li>A banner case: IPv6 addresses. In the initial design, the last /64 of your IP address was calculated from your MAC address. MACs are globally unique, and the odds of anyone else having the same /64 were low. Thus, even moving to the other side of the planet and installing a new operating system would allow your laptop to be correlated by a website operator with IP address logs.</li>
+<li>A client chooses three random servers to talk to for the lifespan of an installation (or a set period of time). These three random servers can identify the client potentially uniquely (at the very least to a subset of users) because an adversary who can observe a client on different networks will see connections to servers A, F, and X only from this (or a subset of) client(s). This is easy for state-level adversaries.</li>
+<li>SSL Session Resumption may even qualify depending on the threat model. If a server gives a user a ticket on IP address X, and tracks that ticket, and then sees it come from IP address Y - it knows these two IPs belong to the same client.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Depending on the application's threat model, the application may try to avoid a network operator being able to fingerprint the use of the application<ul>
+<li>This is extremely difficult if not impossible. Usually it's just getting to a 'best case' situation. If you're really interested or need to go deep into this, you can read about Tor bridges and how Tor has tried to avoid censorship in countries such as China, Ethiopia and Iran.<ul>
+<li><a href="http://www.cs.kau.se/philwint/pdf/usenix-login-2012.pdf">http://www.cs.kau.se/philwint/pdf/usenix-login-2012.pdf</a> </li>
+<li><a href="https://trac.torproject.org/projects/tor/ticket/7141">https://trac.torproject.org/projects/tor/ticket/7141</a> </li>
+<li><a href="https://trac.torproject.org/projects/tor/ticket/6045">https://trac.torproject.org/projects/tor/ticket/6045</a> </li>
+<li><a href="https://gitweb.torproject.org/tor.git/commit/5ed73e3807d90dd0a3">https://gitweb.torproject.org/tor.git/commit/5ed73e3807d90dd0a3</a> </li>
+</ul>
+</li>
+<li>Does the application run on non-standard ports or talk to unchanging IP addresses? Are the central communication IPs known and/or enumerable? If so, a network operator can hardcode these IPs and blacklist them.</li>
+<li>Does the application communicate anything in plaintext, or make plaintext queries <em>about</em> the application? <ul>
+<li>If an application makes a SSL connection, but sends a server certificate with a common name of "Super Secret Anonymity Service" - a network operator can filter on that (plaintext) SSL certificate.</li>
+<li>If the service makes a DNS request to supersecretanonymityservice.com - even if the rest of the protocol is unfingerprintable, that (plaintext) DNS request gave it away.</li>
+<li>If the service smuggles a SSL certificate in somehow, but the application makes an OCSP request supersecretanonymityservice.com - that OCSP request is visible in plaintext.</li>
+</ul>
+</li>
+<li>Does the application use a nonstandard, unique, or uncommon cryptographic handshake and/or protocol?<ul>
+<li>Unfortunately, any new protocol developed that is unlike anything else would be fingerprintable. Even if it was fully random data with no structure - that itself is rare and fingerprintable.</li>
+<li>The best case scenario is to disguise a protocol as a normal Web Browser using SSL, perhaps SSH, streaming flash video, Skype, or something similar.</li>
+<li>This is difficult, but is being actively researched. See: <ul>
+<li><a href="https://www.torproject.org/projects/obfsproxy">https://www.torproject.org/projects/obfsproxy</a> </li>
+<li><a href="http://cacr.uwaterloo.ca/techreports/2012/cacr2012-08.pdf">http://cacr.uwaterloo.ca/techreports/2012/cacr2012-08.pdf</a> </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Does the application take the standard approach of just using SSL? Is there anything unique about the SSL handshake that can be identified?<ul>
+<li>Unique and Constant set of Ciphersuites and/or extensions?</li>
+<li>SSL Certificate Hostname</li>
+<li>Performing a renegotiation immediately after a connection (Tor does this).</li>
+<li>See also: the four Tor-related links above</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Are the version or features of the application distinguishable to an adversary who can observe network traffic?</li>
+</ul>
+<h2>Application Traces</h2>
+<ul>
+<li>If a user uses a tool, and uninstalls it - does it leave a trace on the filesystem?<ul>
+<li>This should be mentioned in the threat model explicitly.</li>
+<li>Directories or Registry Keys left behind?</li>
+<li>Cached Data or Temporary Files?</li>
+<li>Most tools do not securely wipe themselves in the uninstall (and indeed cannot do it completely) but depending on the threat model it may be desirable to consider this.</li>
+</ul>
+</li>
+<li>Does the application cache sensitive data to disk?<ul>
+<li>Does the application take steps to prevent sensitive data in memory from being swapped to disk?</li>
+</ul>
+</li>
+<li>Does the application securely zero memory for sensitive data before free()-ing it?<ul>
+<li>Does it use a cleanse function instead of memset, which may be optimized out by the compiler? See <a href="http://www.viva64.com/en/b/0178/">http://www.viva64.com/en/b/0178/</a> </li>
+</ul>
+</li>
+</ul>
+<h2>Cryptography - Generic</h2>
+<ul>
+<li>If they've written their own protocol there's probably a lot that can be fiddled with. Writing your own protocol is fraught with peril. A non-exhaustive list of things to look at:<ul>
+<li>Replay Attacks<ul>
+<li>Without a challenge/response or timestamp built in, an attacker could replay encrypted &amp; signed messages from one participant to another</li>
+<li>The randomness of the challenge is of course critical</li>
+<li>A simple example would be the server sending a signed message "The latest version of the software is 1.0.0, this can be replayed indefinitely to keep a user at an old version.</li>
+</ul>
+</li>
+<li>Resource Exhaustion <ul>
+<li>If a protocol requires n^2 operations for n participants, what happens the number of participants is very large?</li>
+</ul>
+</li>
+<li>Denial of Service<ul>
+<li>Does the server/receiving participant perform crypto operations before the client? This is an offset work factor.</li>
+<li>What if the client leaves a step half completed?</li>
+</ul>
+</li>
+<li>How does authentication happen? How does the client know they're talking to who they think they are?<ul>
+<li>Certificate Authorities, DNSSEC, or some other central authority? Pre-shared Keys?<br />
+</li>
+</ul>
+</li>
+<li>What happens when one or more participants' clocks are off?<ul>
+<li>This could allow an attacker to reply messages with an older date; or accept an expired and compromised SSL certificate. </li>
+</ul>
+</li>
+<li>In an n-way protocol, what happens when 2 or more participants are colluding?<ul>
+<li>In the mathematical sense, this is most applicable in multi-party computation or threshold schemes.</li>
+<li>But in the general sense, what happens when Trent, the trusted introducer (a Certificate Authority) colludes with Mallory, the attacker (a government).</li>
+</ul>
+</li>
+<li><strong>But really, the mere presence of a custom protocol, without an Academic Paper published, without peer review - that's a huge red flag. They should probably be working actively to fix this or replace it if possible.</strong></li>
+</ul>
+</li>
+<li>In general, examining an application up to the layer cryptographic library is insufficient, you must go deeper.<ul>
+<li>If the library is OpenSSL, verify they are using it correctly. This is exceptionally difficult, based on how confusing OpenSSL is.<br />
+</li>
+<li>If the library is some other random one like PyCrypto - you should go into the library and make sure the library is doing it right. They often are not.</li>
+<li>The defense of a library against side channel attacks should also be considered.<ul>
+<li>As an example, libgcrypt defends again Timing attacks, but not all oracle attacks</li>
+<li>A good resource is <a href="http://crypto.junod.info/hashdays10_talk.pdf">http://crypto.junod.info/hashdays10_talk.pdf</a> </li>
+</ul>
+</li>
+<li><strong>Similarly, re-implementing known algorithms, rather than using a library, should be strongly advised against.</strong></li>
+</ul>
+</li>
+<li>Key Rotation should be considered.<ul>
+<li>Encryption Keys should not be used to encrypt an infinite amount of data. (The limits depend on the cipher, block size, type of traffic, and other factors.) But generally speaking, an encryption key in use for a long period of time should have some mechanism to roll over to a new key. Is such a mechanism provided for?</li>
+<li>How is the new key communicated in a trustworthy fashion to users?</li>
+<li>If an important key is compromised, how would/does the project handle the revocation?</li>
+</ul>
+</li>
+</ul>
+<h2>Cryptography - Specific</h2>
+<ul>
+<li>Any transform applied to plaintext data prior to encryption should be treated as suspect. It will almost certainly leak some data about the plaintext in a theoretical way, and these 'theoretical' leaks often turn out to be exploitable.<ul>
+<li>Consider compression applied before encryption. This leaks the redundancy of the plaintext data being compressed. When part of the data is attacker controlled, this is eminently exploitable. See the recent SSL attack CRIME.</li>
+<li>Dropbox [used to/still] de-duplicates data prior to encrypting and uploading. This means you can use Dropbox as an oracle to tell if anyone else has uploaded a document, which could lead to subpoenas to de-anonymize a whistleblower.</li>
+<li>Applying an error correcting code on plaintext prior to encryption will introduce redundancy into the plaintext.<br />
+<ul>
+<li>As a simple example, consider applying a CRC to the plaintext, and transmitting the ciphertext and CRC. The CRC, transmitted in plaintext) reveals something about the plaintext. If you knew or learned part of the plaintext (for example the Word file type and associated .doc standard format) you might be able to derive a software version.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Obscure or unfamiliar cryptographic constructs should be examined very closely, and likely referred to other consultants or professional cryptographers for second and third looks. These include:<ul>
+<li>Galois Counter Mode (Particularly Tag Length)</li>
+<li>CBC-MAC</li>
+<li>Related Key Derivations</li>
+<li>Large Block constructions like BEAR or LIONESS</li>
+</ul>
+</li>
+<li>Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?</li>
+<li>Older, but 'as yet unbroken' cryptographic algorithms should be viewed very suspiciously. For example:<ul>
+<li>TDES, IDEA, SHA-1</li>
+<li>64 Bit Block Ciphers</li>
+<li>RSA PKCS #1 V1.5 Padding</li>
+</ul>
+</li>
+<li>A message must must must be integrity protected in its entirety.<br />
+<ul>
+<li>If a message is not protected completely, there's probably something bad that can happen.<br />
+</li>
+</ul>
+</li>
+<li>Be suspicious of bare Hashes sent around. A lot of times these are used for some form of authenticity or integrity, when in reality anyone who can modify something can also recompute the hash.</li>
+<li>The implementation of Block Cipher modes should be examined very closely, as history has shown repeated mistakes here<ul>
+<li>CTR mode nonce generation, synchronization, and incrementation<ul>
+<li><a href="http://www.daemonology.net/blog/2011-01-18-tarsnap-critical-security-bug.html">http://www.daemonology.net/blog/2011-01-18-tarsnap-critical-security-bug.html</a> </li>
+</ul>
+</li>
+<li>CBC Mode IV generation and authentication<ul>
+<li>The BEAST attack on SSL</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Is the application vulnerable to tagging attacks?<ul>
+<li><em>I have a couple blog posts that will go into more detail about this, that will be published soon</em></li>
+</ul>
+</li>
+<li>See also Appendix B</li>
+</ul>
+<h2>SSL</h2>
+<ul>
+<li>Any Lib Tech project should always prefer Ephemeral ciphersuites<ul>
+<li>SSL ciphersuites with 'DHE' in their name provide forward secrecy in the event of a private key compromise/factor.</li>
+<li><a href="http://googleonlinesecurity.blogspot.com/2011/11/protecting-data-for-long-term-with.html">http://googleonlinesecurity.blogspot.com/2011/11/protecting-data-for-long-term-with.html</a> </li>
+</ul>
+</li>
+<li>If the site uses Client Certificates (or really any other form of SSL Authentication: PSK/etc) - do all third party includes also use that form? If not, the authentication is the lesser of all.</li>
+<li>Pinning<ul>
+<li>If they have a website: do they pin certificate authorities in Chrome's preloaded list? See:<ul>
+<li><a href="http://www.chromium.org/sts">http://www.chromium.org/sts</a> </li>
+<li><a href="https://wiki.mozilla.org/Privacy/Features/HSTS_Preload_List">https://wiki.mozilla.org/Privacy/Features/HSTS_Preload_List</a> </li>
+</ul>
+</li>
+<li>If they have a thick client or mobile app: do they pin certificates in it?</li>
+<li>Choice of Certificate Authority comes into play here too.<ul>
+<li><a href="http://ritter.vg/blog-cas_and_pinning.html">http://ritter.vg/blog-cas_and_pinning.html</a>  <br />
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Web Site Concerns<ul>
+<li>Mixed Content<ul>
+<li>Javascript, CSS, or Embeds loaded over HTTP on a HTTPS site can result in page rewrites that massively impact the security of the site (e.g. obliterate it.)</li>
+<li>Images, Fonts, and other resources are also a concern, as they trigger the Mixed Content warning in browsers (not good), and can allow an attacker to observe or modify traffic to impact or reveal the display of the page.</li>
+</ul>
+</li>
+<li>Cookies marked Secure</li>
+<li>Strict-Transport-Security?<ul>
+<li>Is the site in Chrome's preloaded HSTS list? <a href="http://dev.chromium.org/sts">http://dev.chromium.org/sts</a> </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Defense in Depth SSL Practices:<ul>
+<li>DANE<ul>
+<li>Really only effective with DNSSEC</li>
+<li><a href="https://grepular.com/Understanding_DNSSEC">https://grepular.com/Understanding_DNSSEC</a> </li>
+<li><a href="http://tools.ietf.org/html/rfc6698">http://tools.ietf.org/html/rfc6698</a> </li>
+</ul>
+</li>
+<li>CAA<ul>
+<li>DNS record to help prevent CA's from mis-issuing. <a href="http://tools.ietf.org/html/draft-ietf-pkix-caa">http://tools.ietf.org/html/draft-ietf-pkix-caa</a> </li>
+</ul>
+</li>
+<li>Must Staple OID<ul>
+<li>No reference on this yet as it doesn't exist quite yet.</li>
+</ul>
+</li>
+<li>OCSP Stapling<ul>
+<li>No good reference on this. Only supported in Apache 2.4/Nginx/IIS 7.  Can test for it with wireshark.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Who has access to the SSL private key?<ul>
+<li>This seems like a no-brainer, but in some instances services will host a blog on squarespace or wordpress, and give them a wildcard SSL certificate that would allow the provider to MITM their entire application. If a SSL private key must reside on third-party infrastructure (EC2, Wordpress, Squarespace, etc) it should be tightly scoped.</li>
+<li>They do generate their own Private Key, and submit a CSR correct?</li>
+<li>Is the project hosted on bare metal, or a cloud provider?</li>
+</ul>
+</li>
+</ul>
+<h2>Privacy Development Techniques for Web Apps</h2>
+<ul>
+<li>The site should not leak a request to any Third Party if at all possible.<ul>
+<li>Third Party images, css, and javascript</li>
+<li>OCSP request from the browser</li>
+<li>Facebook Like buttons, Google +1 buttons</li>
+<li>Google Analytics</li>
+<li>Embedded Videos (Youtube, Vimeo)</li>
+<li>Twitter Feed</li>
+<li>Adaptive or Two-Factor Authentication (e.g. using RSA, YubiKey, etc)</li>
+</ul>
+</li>
+<li>The site should not log users actions, or perform the minimum amount of logging feasible<ul>
+<li>Do they log user's IP addresses? Do they have to?</li>
+<li>How often do they wipe or anonymize the logs? How is the anonymization performed?<ul>
+<li>The Tor Project explains their process here: <a href="https://lists.torproject.org/pipermail/tor-dev/2011-October/002981.html">https://lists.torproject.org/pipermail/tor-dev/2011-October/002981.html</a> </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Does the site have a public statement explaining what they disclose to whom and under what circumstances?</li>
+<li><em>A lot of these come from <a href="https://www.eff.org/sites/default/files/filenode/hope_privacy_tricks.pdf">Micah Lee's talk at HOPE</a></em><ul>
+<li><em>This is really worth reading and referencing as suggestions are given for ways to accomplish the same thing without leaking the data</em></li>
+</ul>
+</li>
+</ul>
+<h2>Web Application Defense in Depth</h2>
+<ul>
+<li><em>These items are occasionally logged as bugs, and it may be appropriate to log them as such in a report; but they should be noted as defense in depth techniques that should be used to make exploitation more difficult.</em></li>
+<li>DNSSEC<ul>
+<li>Does the site make use of DNSSEC? </li>
+<li>If the site does not operate under a signed root, they can register in the DLV: <a href="https://www.isc.org/solutions/dlv">https://www.isc.org/solutions/dlv</a> </li>
+</ul>
+</li>
+<li>Content Security Policy<ul>
+<li><a href="http://engineering.twitter.com/2011/03/improving-browser-security-with-csp.html">http://engineering.twitter.com/2011/03/improving-browser-security-with-csp.html</a> </li>
+<li><a href="http://www.w3.org/TR/CSP/">http://www.w3.org/TR/CSP/</a> </li>
+</ul>
+</li>
+<li>crossdomain.xml and clientaccesspolicy.xml<ul>
+<li><a href="http://code.google.com/p/browsersec/wiki/Part2#Same-origin_policy_for_Flash">http://code.google.com/p/browsersec/wiki/Part2#Same-origin_policy_for_Flash</a></li>
+<li><a href="http://code.google.com/p/browsersec/wiki/Part2#Same-origin_policy_for_Silverlight">http://code.google.com/p/browsersec/wiki/Part2#Same-origin_policy_for_Silverlight</a> </li>
+<li>These files should either be locked down or not present.  If present, they should be examined closely.</li>
+</ul>
+</li>
+<li>Cache Control &amp; AutoComplete=OFF<ul>
+<li><a href="http://code.google.com/p/browsersec/wiki/Part2#Document_caching">http://code.google.com/p/browsersec/wiki/Part2#Document_caching</a> </li>
+</ul>
+</li>
+<li>Post-Redirect Pattern<ul>
+<li><a href="http://en.wikipedia.org/wiki/Post/Redirect/Get">http://en.wikipedia.org/wiki/Post/Redirect/Get</a> </li>
+<li>This pattern can prevent back-buttons resubmitting sensitive forms such as login</li>
+</ul>
+</li>
+<li>Strict Transport Security<ul>
+<li><a href="http://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security">http://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security</a> </li>
+</ul>
+</li>
+<li>X-Frame-Options along with frame busting javascript for clients who don't support it<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/The_X-FRAME-OPTIONS_response_header">https://developer.mozilla.org/en-US/docs/The_X-FRAME-OPTIONS_response_header</a> </li>
+<li><a href="http://en.wikipedia.org/wiki/Framekiller">http://en.wikipedia.org/wiki/Framekiller</a> </li>
+</ul>
+</li>
+<li>X-Content-Type-Options<ul>
+<li><a href="http://blogs.msdn.com/b/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx">http://blogs.msdn.com/b/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx</a> <br />
+</li>
+</ul>
+</li>
+<li>Correct character set specified<ul>
+<li><a href="http://code.google.com/p/doctype-mirror/wiki/ArticleUtf7">http://code.google.com/p/doctype-mirror/wiki/ArticleUtf7</a> </li>
+</ul>
+</li>
+<li>Prepared Statements for accessing a database, and never string built SQL</li>
+<li>Minimized database user permissions (SELECT but no DELETE, etc)</li>
+<li>Do they provide a mechanism to see other active sessions, a login history, and clear all sessions?<br />
+</li>
+<li>Do they have a two factor authentication option? Account lockout? IP whitelisting?</li>
+<li>What is their "Forgot Password" logic like?<ul>
+<li>Simple questions like Mother's Maiden Name and Address on File are easily googleable (ask Sarah Palin.)  A better solution is the email verification.</li>
+</ul>
+</li>
+<li>Does the site strip the Referer on outgoing links? <ul>
+<li>There are javascript techniques to do so, including <a href="http://blog.kotowicz.net/2011/10/stripping-referrer-for-fun-and-profit.html">http://blog.kotowicz.net/2011/10/stripping-referrer-for-fun-and-profit.html</a> </li>
+</ul>
+</li>
+</ul>
+<h2>Mobile Application Defense in Depth</h2>
+<ul>
+<li>Does not unnecessarily collect or report on personal information: Contacts, Location, Phone Number, Device Identifiers, or other.</li>
+<li>Uses a unique/non-hardware based identifier to prevent correlation with other apps</li>
+<li>Communicates over SSL with remote servers, and correctly checks validity of SSL certificates<ul>
+<li>If feasible or possible, pins server certificate or CA</li>
+</ul>
+</li>
+<li>Does not download and run dynamic code from a server<ul>
+<li>The server could be compromised or impersonated to achieve remote code execution.</li>
+</ul>
+</li>
+<li>Uses all possible device-provided encryption APIs <ul>
+<li>In general, the application stores data securely, perhaps using SQLCipher <a href="https://guardianproject.info/code/sqlcipher/">https://guardianproject.info/code/sqlcipher/</a> </li>
+</ul>
+</li>
+<li>Allows expiring of authenticated phone sessions from a web site</li>
+<li>Does not unnecessarily cache or store sensitive data on the device</li>
+<li>Does not log sensitive data to the system log</li>
+</ul>
+<h2>Binary / Thick Client Defense in Depth</h2>
+<ul>
+<li>Does not require administrative permissions during use or install<ul>
+<li>If a client requires administrative permissions during use, an attacker who exploited the program would then have administrative permissions and unchecked ability to compromise the user's machine. Running as administrator is an unacceptable design.</li>
+<li>If a client requires administrative permissions during install, users without those permissions are prevented from using the software, and it trains users to accept 'Admin Access; for this installer, which would compromise more users if a software distribution point was compromised.</li>
+</ul>
+</li>
+<li>Does the application use the minimal set of third party libraries? <ul>
+<li>What are the versions of each?</li>
+<li>Are they dynamically or statically linked?</li>
+<li>Do they warn the user/refuse to load if the version is known to be insecure?</li>
+</ul>
+</li>
+<li>Does the application take efforts to prevent the leak of sensitive information in memory<ul>
+<li>Disallowing core dumps using prctl(PR_SET_DUMPABLE...) on segfaults or SIGKILL signals</li>
+<li>(Attempting to) Prevent ptrace or other hooking</li>
+<li>Disabling performance counters on Linux using prctl(PR_TASK_PERF_EVENTS_DISABLE...)</li>
+</ul>
+</li>
+<li>Does the application pack itself or use code obfuscation techniques that may flag it as a virus?</li>
+<li>Windows<ul>
+<li>DEP</li>
+<li>ASLR for all modules</li>
+<li>Prevent DLL Hijacking</li>
+</ul>
+</li>
+<li>Linux<ul>
+<li>Compatible with grSecurity / PaX / SELinux</li>
+<li>seccomp</li>
+<li>apparmor<ul>
+<li>A good (but not comprehensive) resource on things to look for is: <a href="http://blog.azimuthsecurity.com/2012/09/poking-holes-in-apparmor-profiles.html">http://blog.azimuthsecurity.com/2012/09/poking-holes-in-apparmor-profiles.html</a> </li>
+</ul>
+</li>
+<li>Position Independent (PIE/PIC)</li>
+<li>Is any information shared through an IPC mechanism, such as D-Bus or a shared event loop</li>
+</ul>
+</li>
+<li>Mac<ul>
+<li>Does the application sandbox itself using the Apple Sandbox?<ul>
+<li><a href="https://romab.com/ironsuite/SBPL.html">https://romab.com/ironsuite/SBPL.html</a> </li>
+<li><a href="http://securityevaluators.com/files/papers/apple-sandbox.pdf">http://securityevaluators.com/files/papers/apple-sandbox.pdf</a> </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Does the application allow itself to be fully proxied, with no network or DNS leaks, for use with Tor? See Appendix A.</li>
+</ul>
+<h2>Secure Software Distribution</h2>
+<ul>
+<li>Is the application signed?<ul>
+<li>There are arguments about how Authenticode is more or less secure than PGP signatures. Does the project use <em>one</em> of them? Do they make an effort to encourage or teach people to validate the signature?</li>
+</ul>
+</li>
+<li>Is the software distributed in operating system package managers?<ul>
+<li>Are the operating systems' distributions up to date?<ul>
+<li>Does the project provide its own source repo users can add to the package manager?</li>
+</ul>
+</li>
+<li>Do the OS vendors apply patches that may reduce the security of the application?</li>
+</ul>
+</li>
+<li>Is the software distributed over SSL?<ul>
+<li>Even if the application includes a signature, SSL is an easy defense in depth practice</li>
+</ul>
+</li>
+<li>Is the software distributed to mirrors? Does the project have integrity checkers for the mirrors?</li>
+<li>Does the application only allow patches greater than the current version to be applied, to prevent vulnerable-but-validly-signed older versions from being applied?</li>
+</ul>
+<h1>Appendix A: Examining an Application for Proxy Leaks</h1>
+<ul>
+<li>Set up a tor bridge on another host in your network/on the internet</li>
+<li>Boot your client/testing machine from a LiveCD</li>
+<li>Install Tor, have it point to the bridge</li>
+<li>Install shorewall (or use iptables, but I don't know the correct iptables commands)<ul>
+<li>/etc/shorewall/zones:
+    <pre>
+    fw    firewall
+    net    ipv4
+    </pre></li>
+<li>/etc/shorewall/interfaces
+    <pre>
+    net    eth0    detect    dhcp
+    </pre></li>
+<li>/etc/shorewall/policy
+    <pre>
+    fw    net     DROP     warn
+    net    fw      DROP    info
+    </pre></li>
+<li>/etc/shorewall/rules
+    <pre>
+    ACCEPT    $FW      bridgeip     tcp    bridgeport
+    </pre></li>
+</ul>
+</li>
+<li>This should prevent anything from leaving your machine that doesn't go to that single port on that single ip over TCP. Tail your logs, and let your machine quiet down. Stop any ntp services, system updates, etc. Get it so your machine is sending no traffic.</li>
+<li>Start up the application, use <em>every single feature</em> and make sure it's all being correctly proxied through tor. Anything that shows up in your logs is a leak. Investigate it.</li>
+</ul>
+<p>It's worth verifying that this setup correctly stops/logs UDP and ICMP. </p>
+<p><strong>Very Important</strong>: This will not help you if the application sends de-anonymizing information (like external IP) over the Tor link. </p>
+<p>Other resources from the Tor community:</p>
+<ul>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/doc/DnsResolver">https://trac.torproject.org/projects/tor/wiki/doc/DnsResolver</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/doc/Preventing_Tor_DNS_Leaks">https://trac.torproject.org/projects/tor/wiki/doc/Preventing_Tor_DNS_Leaks</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/doc/PreventingDnsLeaksInTor">https://trac.torproject.org/projects/tor/wiki/doc/PreventingDnsLeaksInTor</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO">https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO</a></li>
+<li><a href="https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks">https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks</a></li>
+</ul>
+<h1>Appendix B: Cryptographic Attacks Cheat Sheet</h1>
+<ul>
+<li>ECB<ul>
+<li>Block Swapping</li>
+<li>Data Leakage</li>
+</ul>
+</li>
+<li>CBC<ul>
+<li>Watermarking<ul>
+<li><a href="http://en.wikipedia.org/wiki/Watermarking_attack">http://en.wikipedia.org/wiki/Watermarking_attack</a> </li>
+</ul>
+</li>
+<li>Data modification leak</li>
+<li>Malleability via bit flipping</li>
+<li>Cut &amp; Paste attack<ul>
+<li><a href="http://books.google.com/books?id=UW3SS9P9hdEC&amp;pg=PT99&amp;lpg=PT107&amp;ots=0VG3xbufOG&amp;dq=CBC+%22cut+and+paste+attack%22">http://books.google.com/books?id=UW3SS9P9hdEC&amp;pg=PT99&amp;lpg=PT107&amp;ots=0VG3xbufOG&amp;dq=CBC+%22cut+and+paste+attack%22</a> </li>
+</ul>
+</li>
+<li>Rearranging blocks.</li>
+<li>Vaudenay's Oracle (BEAST Attack)</li>
+</ul>
+</li>
+<li>CTR<ul>
+<li>Counter reuse</li>
+<li>Passki and Ritter's Oracle (CTR/CBC/OFB/CFB)</li>
+</ul>
+</li>
+<li>RSA<ul>
+<li>Fault Injection &amp; Random Faults</li>
+<li>Multiplicative property</li>
+<li>Choosing common modulus N to serve multiple users.</li>
+<li>Small decryption exponent d</li>
+<li>Forward Search Attack</li>
+<li>Coppersmith's Attack</li>
+<li>Coppersmith's Short Pad Attack</li>
+<li>Hastad's broadcast attack</li>
+<li>Bleichenbacher's Attack on PKCS 1</li>
+<li>Kocher's Timing Attacks</li>
+<li>Manger's oracle</li>
+<li>Naive implementations</li>
+<li>Franklin-Reiter Related Message Attack</li>
+</ul>
+</li>
+<li>Stream Cipher<ul>
+<li>Correlation Attack</li>
+<li>Keyreuse</li>
+</ul>
+</li>
+<li>DH<ul>
+<li>Denial of service Attacks</li>
+<li>Man in the Middle Attacks</li>
+<li>Degenerate Message Attacks</li>
+<li>Simple Exponents</li>
+<li>Simple Substitution Attacks</li>
+<li>Message Replay Attacks</li>
+<li>Message Redirection</li>
+<li>Attacks on Parameter Authentication</li>
+<li>Timing Attacks</li>
+<li>Small subgroup reduction</li>
+<li>Reusing ephemeral keys</li>
+</ul>
+</li>
+<li>DSA<ul>
+<li>Fault Attacks</li>
+<li>Misuse or leakage of per-message secret</li>
+</ul>
+</li>
+<li>ElGamal<ul>
+<li>Insecurity under a chosen ciphertext attack.</li>
+</ul>
+</li>
+<li>ECC<ul>
+<li>Fault Attacks</li>
+<li>Side-Channel</li>
+</ul>
+</li>
+<li>Hashing<ul>
+<li>Non constant compares</li>
+</ul>
+</li>
+</ul>
