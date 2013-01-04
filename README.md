@@ -1,3 +1,11 @@
+# Meta
+
+The canonical, 'up-to-date' version is located at https://github.com/iSECPartners/LibTech-Auditing-Cheatsheet You are encouraged to improve the document and submit pull requests.
+
+The README.md document may be converted to html using ./build_html.py The HTML version contains minor formatting changes not possible in markdown. The Markdown version should be edited and is considered authoritative.  
+
+The Github-styled markdown version of the document is generally sufficient, although formatting in Appendix A is improved in the HTML version.
+
 # Introduction 
 
 This list is intended to be a list of additional or more technical things to look for when auditing extremely high value applications. The applications may involve operational security for involved actors (such as law enforcement research), extremely valuable transactions (such as a Stock Trading Application), societal issues that could open users to physical harassment (such as a Gay Dating Application), or technologies designed to be used by journalists operating inside repressive countries.
@@ -178,7 +186,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
         * Images, Fonts, and other resources are also a concern, as they trigger the Mixed Content warning in browsers (not good), and can allow an attacker to observe or modify traffic to impact or reveal the display of the page.
     * Cookies marked Secure
     * Strict-Transport-Security?
-        * Is the site in Chrome's preloaded HSTS list? http://dev.chromium.org/sts 
+        * Is the site in Chrome's preloaded HSTS list? (See above)
 * Defense in Depth SSL Practices:
     * DANE
         * Really only effective with DNSSEC
@@ -406,3 +414,10 @@ Other resources from the Tor community:
     * Non constant compares
 
 
+# Acknowledgements
+
+It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional thanks to my employer, iSEC Partners, for sponsoring this work.
+
+# Licensing
+
+Licensing information will go here.

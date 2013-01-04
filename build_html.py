@@ -11,5 +11,5 @@ html = md.convert(guidelines)
 html = html.replace('&lt;true_pre&gt;', '<pre>')
 html = html.replace('&lt;/true_pre&gt;', '</pre>')
 
-f_out = open('README.html', 'w')
+f_out = open('guidelines.html', 'w')
 f_out.write(html)
