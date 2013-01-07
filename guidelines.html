@@ -143,6 +143,11 @@
 <li>Does it use a cleanse function instead of memset, which may be optimized out by the compiler? See <a href="http://www.viva64.com/en/b/0178/">http://www.viva64.com/en/b/0178/</a> </li>
 </ul>
 </li>
+<li>What sensitive information is exposed if the user has malware?<ul>
+<li>What informaiton can a keylogger or screengrabber see?</li>
+<li>Can the malware access sensitive stored data? (All the time? Some of the time?)</li>
+</ul>
+</li>
 </ul>
 <h2>Cryptography - Generic</h2>
 <ul>
@@ -416,6 +421,11 @@
 <li>Allows expiring of authenticated phone sessions from a web site</li>
 <li>Does not unnecessarily cache or store sensitive data on the device</li>
 <li>Does not log sensitive data to the system log</li>
+<li>Android<ul>
+<li>Does the application broadcast intents that can be received from other apps?</li>
+<li>Does the application store data on the SD card, where it can be read by any other app?</li>
+</ul>
+</li>
 </ul>
 <h2>Binary / Thick Client Defense in Depth</h2>
 <ul>
@@ -437,6 +447,10 @@
 </ul>
 </li>
 <li>Does the application pack itself or use code obfuscation techniques that may flag it as a virus?</li>
+<li>Does the application check and warn the user if an Anti-Virus is not present?<ul>
+<li>See: <a href="http://stackoverflow.com/questions/1331887/detect-antivirus-on-windows-using-c-sharp">http://stackoverflow.com/questions/1331887/detect-antivirus-on-windows-using-c-sharp</a></li>
+</ul>
+</li>
 <li>Windows<ul>
 <li>DEP</li>
 <li>ASLR for all modules</li>

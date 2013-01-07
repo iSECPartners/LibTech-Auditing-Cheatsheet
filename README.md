@@ -105,6 +105,9 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Does the application take steps to prevent sensitive data in memory from being swapped to disk?
 * Does the application securely zero memory for sensitive data before free()-ing it?
     * Does it use a cleanse function instead of memset, which may be optimized out by the compiler? See http://www.viva64.com/en/b/0178/ 
+* What sensitive information is exposed if the user has malware?
+    * What informaiton can a keylogger or screengrabber see?
+    * Can the malware access sensitive stored data? (All the time? Some of the time?)
 
 ## Cryptography - Generic
 
@@ -270,6 +273,9 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * Allows expiring of authenticated phone sessions from a web site
 * Does not unnecessarily cache or store sensitive data on the device
 * Does not log sensitive data to the system log
+* Android
+    * Does the application broadcast intents that can be received from other apps?
+    * Does the application store data on the SD card, where it can be read by any other app?
 
 ## Binary / Thick Client Defense in Depth
 
@@ -285,6 +291,8 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * (Attempting to) Prevent ptrace or other hooking
     * Disabling performance counters on Linux using prctl(PR_TASK_PERF_EVENTS_DISABLE...)
 * Does the application pack itself or use code obfuscation techniques that may flag it as a virus?
+* Does the application check and warn the user if an Anti-Virus is not present?
+    * See: http://stackoverflow.com/questions/1331887/detect-antivirus-on-windows-using-c-sharp
 * Windows
     * DEP
     * ASLR for all modules
