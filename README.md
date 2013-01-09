@@ -327,7 +327,10 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
         * http://securityevaluators.com/files/papers/apple-sandbox.pdf 
 * Does the application allow itself to be fully proxied, with no network or DNS leaks, for use with Tor? See Appendix A.
 
-## Secure Software Distribution
+## Secure Software Distribution & Install
+* Does the applicaiton provide safe defaults?
+* Does the application prevent the user from being able to proceed or change settings to make them unsafe?
+    * Example: HSTS dictates a user is unable to bypass a certificate error
 * Is the application signed?
     * There are arguments about how Authenticode is more or less secure than PGP signatures. Does the project use *one* of them? Do they make an effort to encourage or teach people to validate the signature?
 * Is the software distributed in operating system package managers?
@@ -340,10 +343,9 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * Is the software distributed to mirrors? Does the project have integrity checkers for the mirrors?
 * Does the application only allow patches greater than the current version to be applied?
     * This prevents vulnerable-but-validly-signed older versions from being applied.
-
-
-
  
+
+
 # Appendix A: Examining an Application for Proxy Leaks
 
 * Set up a tor bridge on another host in your network/on the internet

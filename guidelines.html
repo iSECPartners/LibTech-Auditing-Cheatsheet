@@ -511,8 +511,13 @@
 </li>
 <li>Does the application allow itself to be fully proxied, with no network or DNS leaks, for use with Tor? See Appendix A.</li>
 </ul>
-<h2>Secure Software Distribution</h2>
+<h2>Secure Software Distribution &amp; Install</h2>
 <ul>
+<li>Does the applicaiton provide safe defaults?</li>
+<li>Does the application prevent the user from being able to proceed or change settings to make them unsafe?<ul>
+<li>Example: HSTS dictates a user is unable to bypass a certificate error</li>
+</ul>
+</li>
 <li>Is the application signed?<ul>
 <li>There are arguments about how Authenticode is more or less secure than PGP signatures. Does the project use <em>one</em> of them? Do they make an effort to encourage or teach people to validate the signature?</li>
 </ul>
