@@ -20,6 +20,10 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 
 * Threat Model
     * If a project has not documented what they intend to protect themselves from, and what they do not intend to protect themselves from - they probably haven't given much thought to what attacks may be possible to defend against and what attacks are not.  
+        * Some example Threat Models:
+            * https://svn.torproject.org/svn/projects/design-paper/tor-design.html#subsec:threat-model
+            * https://gitweb.torproject.org/obfsproxy.git/blob/HEAD:/doc/obfs2/threat-model.txt
+            * https://www.torproject.org/projects/torbrowser/design/
     * For example: Tor explicitly does not defend against end-to-end correlation: if an attacker can monitor a user (e.g. a user in the US) and the site they are connecting to (e.g. a site hosted at Amazon EC2 East Coast) it's assumed it's game over, and the attacker can de-anonymize the user. No complicated defenses will be taken. For this reason, tagging attacks are also not defended against.
     * Some common threat model questions:
         * Do you intend to protect against forensic analysis of a disk to determine what activities a user has participated in using the software?
@@ -38,7 +42,10 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
         * Thus, the application should be able to gracefully handle any way data can be formatted according to the spec; and that it generally should not loosely accept incorrectly formatted data, *especially* when it is the first or major implementation of the protocol.
 * TODOs, FIXMEs, HACKs, or XXXs
     * If code contains comments to these effects, the code should be investigated thoroughly (duh) and there should probably be a corresponding issue in the project's bugtracker.
+* Is project documentation kept up to date?
 * Does the software provide extremely simple, easy-to-understand instructions for use, discouraging bad practices and performing necessary verification checks?
+    * Examples:
+        * https://www.torproject.org/download/download-easy.html.en#warning
 * Are risks documented to users? 
     * Does the software take efforts to explain what the product does and doesn't provide, and under what environments (e.g. corporate) the software grants no protection?
         * Examples: Chrome Incognito mode, Tor
@@ -50,11 +57,14 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Are they able to perform additional traffic analysis on users?
     * Do the protocols break down when a member of the protocol is also the service administrator?
     * This position may be enjoyed by attackers who can monitor or subvert the administrative network (internally or externally).
-* With what ease can the system deliver backdoored or malicious code to users?
 * What systems are in place to restrict privileged individuals...
     * From fully subverting the system?
     * From gaining access to user account information?
     * From gaining access to web server logs?
+* With what ease can the system deliver backdoored or malicious code to users?
+    * Does the application interpret code and execute it at runtime?
+    * Does the application run on the provider's servers?
+    * Does the application auto-update?
 * What technical and policy-based access control mechanisms are in place to segregate differently-privileged users?
 * How is the service hosted, and what additional privileged users are granted access by the choice of hosting?  
     * What do they gain access to and what are they restricted from?
@@ -62,7 +72,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * What additional services are running on machines that see privileged user information?
 * In what jurisdiction is the service hosted?
 
-## Fingerprinting
+## Network Fingerprinting
 
 * Any permanent settings unique to a client (or customizable) that persist may be used to track users across networks. Even in the case where a setting does not uniquely identify a user, it will partition the user into a subset of all users, reducing all users' anonymity.
     * Some examples to illustrate this topic:
@@ -76,6 +86,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
         * https://trac.torproject.org/projects/tor/ticket/7141 
         * https://trac.torproject.org/projects/tor/ticket/6045 
         * https://gitweb.torproject.org/tor.git/commit/5ed73e3807d90dd0a3 
+        * In General: https://censorshipwiki.torproject.org
     * Does the application run on non-standard ports or talk to unchanging IP addresses? Are the central communication IPs known and/or enumerable? If so, a network operator can hardcode these IPs and blacklist them.
     * Does the application communicate anything in plaintext, or make plaintext queries *about* the application? 
         * If an application makes a SSL connection, but sends a server certificate with a common name of "Super Secret Anonymity Service" - a network operator can filter on that (plaintext) SSL certificate.
@@ -101,12 +112,14 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Directories or Registry Keys left behind?
     * Cached Data or Temporary Files?
     * Most tools do not securely wipe themselves in the uninstall (and indeed cannot do it completely) but depending on the threat model it may be desirable to consider this.
+* Does the application log information?
+    * How verbose is it by default? Is it necessary?
 * Does the application cache sensitive data to disk?
     * Does the application take steps to prevent sensitive data in memory from being swapped to disk?
 * Does the application securely zero memory for sensitive data before free()-ing it?
     * Does it use a cleanse function instead of memset, which may be optimized out by the compiler? See http://www.viva64.com/en/b/0178/ 
 * What sensitive information is exposed if the user has malware?
-    * What informaiton can a keylogger or screengrabber see?
+    * What information can a keylogger or screengrabber see?
     * Can the malware access sensitive stored data? (All the time? Some of the time?)
 
 ## Cryptography - Generic
@@ -131,6 +144,9 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * **But really, the mere presence of a custom protocol, without an Academic Paper published, without peer review - that's a huge red flag. They should probably be working actively to fix this or replace it if possible.**
 * In general, examining an application up to the layer cryptographic library is insufficient, you must go deeper.
     * If the library is OpenSSL, verify they are using it correctly. This is exceptionally difficult, based on how confusing OpenSSL is.  
+        * Resources:
+            * https://crypto.stanford.edu/~dabo/pubs/abstracts/ssl-client-bugs.html
+            * https://isecpartners.com/news-events/news/2012/october/the-lurking-menace-of-broken-tls-validation.aspx
     * If the library is some other random one like PyCrypto - you should go into the library and make sure the library is doing it right. They often are not.
     * The defense of a library against side channel attacks should also be considered.
         * As an example, libgcrypt defends again Timing attacks, but not all oracle attacks
@@ -154,7 +170,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Related Key Derivations
     * Large Block constructions like BEAR or LIONESS
 * Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?
-* Older, but 'as yet unbroken' cryptographic algorithms should be viewed very suspiciously. For example:
+* Older, but 'not yet insecure' cryptographic algorithms should be viewed very suspiciously. For example:
     * TDES, IDEA, SHA-1
     * 64 Bit Block Ciphers
     * RSA PKCS #1 V1.5 Padding
@@ -317,8 +333,9 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Are the operating systems' distributions up to date?
         * Does the project provide its own source repo users can add to the package manager?
     * Do the OS vendors apply patches that may reduce the security of the application?
-* Is the software distributed over SSL?
-    * Even if the application includes a signature, SSL is an easy defense in depth practice
+* Is the software distributed over HTTPS?
+    * Even if the application includes a signature, HTTPS is an easy defense in depth practice
+    * For the purposes intended (easy defense in depth), a self-signed certificate is insufficient
 * Is the software distributed to mirrors? Does the project have integrity checkers for the mirrors?
 * Does the application only allow patches greater than the current version to be applied, to prevent vulnerable-but-validly-signed older versions from being applied?
 
@@ -424,7 +441,7 @@ Other resources from the Tor community:
 
 # Acknowledgements
 
-It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional thanks to my employer, iSEC Partners, for sponsoring this work.
+It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional feedback was provided by Philipp Winter and Michael Rogers. Finally, thanks to my employer, iSEC Partners, for sponsoring this work.
 
 # Licensing
 

@@ -12,6 +12,14 @@
 <ul>
 <li>Threat Model<ul>
 <li>If a project has not documented what they intend to protect themselves from, and what they do not intend to protect themselves from - they probably haven't given much thought to what attacks may be possible to defend against and what attacks are not.<br />
+<ul>
+<li>Some example Threat Models:<ul>
+<li><a href="https://svn.torproject.org/svn/projects/design-paper/tor-design.html#subsec:threat-model">https://svn.torproject.org/svn/projects/design-paper/tor-design.html#subsec:threat-model</a></li>
+<li><a href="https://gitweb.torproject.org/obfsproxy.git/blob/HEAD:/doc/obfs2/threat-model.txt">https://gitweb.torproject.org/obfsproxy.git/blob/HEAD:/doc/obfs2/threat-model.txt</a></li>
+<li><a href="https://www.torproject.org/projects/torbrowser/design/">https://www.torproject.org/projects/torbrowser/design/</a></li>
+</ul>
+</li>
+</ul>
 </li>
 <li>For example: Tor explicitly does not defend against end-to-end correlation: if an attacker can monitor a user (e.g. a user in the US) and the site they are connecting to (e.g. a site hosted at Amazon EC2 East Coast) it's assumed it's game over, and the attacker can de-anonymize the user. No complicated defenses will be taken. For this reason, tagging attacks are also not defended against.</li>
 <li>Some common threat model questions:<ul>
@@ -43,7 +51,14 @@
 <li>If code contains comments to these effects, the code should be investigated thoroughly (duh) and there should probably be a corresponding issue in the project's bugtracker.</li>
 </ul>
 </li>
-<li>Does the software provide extremely simple, easy-to-understand instructions for use, discouraging bad practices and performing necessary verification checks?</li>
+<li>Is project documentation kept up to date?</li>
+<li>Does the software provide extremely simple, easy-to-understand instructions for use, discouraging bad practices and performing necessary verification checks?<ul>
+<li>Examples:<ul>
+<li><a href="https://www.torproject.org/download/download-easy.html.en#warning">https://www.torproject.org/download/download-easy.html.en#warning</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li>Are risks documented to users? <ul>
 <li>Does the software take efforts to explain what the product does and doesn't provide, and under what environments (e.g. corporate) the software grants no protection?<ul>
 <li>Examples: Chrome Incognito mode, Tor</li>
@@ -61,11 +76,16 @@
 <li>This position may be enjoyed by attackers who can monitor or subvert the administrative network (internally or externally).</li>
 </ul>
 </li>
-<li>With what ease can the system deliver backdoored or malicious code to users?</li>
 <li>What systems are in place to restrict privileged individuals...<ul>
 <li>From fully subverting the system?</li>
 <li>From gaining access to user account information?</li>
 <li>From gaining access to web server logs?</li>
+</ul>
+</li>
+<li>With what ease can the system deliver backdoored or malicious code to users?<ul>
+<li>Does the application interpret code and execute it at runtime?</li>
+<li>Does the application run on the provider's servers?</li>
+<li>Does the application auto-update?</li>
 </ul>
 </li>
 <li>What technical and policy-based access control mechanisms are in place to segregate differently-privileged users?</li>
@@ -78,7 +98,7 @@
 <li>What additional services are running on machines that see privileged user information?</li>
 <li>In what jurisdiction is the service hosted?</li>
 </ul>
-<h2>Fingerprinting</h2>
+<h2>Network Fingerprinting</h2>
 <ul>
 <li>Any permanent settings unique to a client (or customizable) that persist may be used to track users across networks. Even in the case where a setting does not uniquely identify a user, it will partition the user into a subset of all users, reducing all users' anonymity.<ul>
 <li>Some examples to illustrate this topic:<ul>
@@ -96,6 +116,7 @@
 <li><a href="https://trac.torproject.org/projects/tor/ticket/7141">https://trac.torproject.org/projects/tor/ticket/7141</a> </li>
 <li><a href="https://trac.torproject.org/projects/tor/ticket/6045">https://trac.torproject.org/projects/tor/ticket/6045</a> </li>
 <li><a href="https://gitweb.torproject.org/tor.git/commit/5ed73e3807d90dd0a3">https://gitweb.torproject.org/tor.git/commit/5ed73e3807d90dd0a3</a> </li>
+<li>In General: <a href="https://censorshipwiki.torproject.org">https://censorshipwiki.torproject.org</a></li>
 </ul>
 </li>
 <li>Does the application run on non-standard ports or talk to unchanging IP addresses? Are the central communication IPs known and/or enumerable? If so, a network operator can hardcode these IPs and blacklist them.</li>
@@ -135,6 +156,10 @@
 <li>Most tools do not securely wipe themselves in the uninstall (and indeed cannot do it completely) but depending on the threat model it may be desirable to consider this.</li>
 </ul>
 </li>
+<li>Does the application log information?<ul>
+<li>How verbose is it by default? Is it necessary?</li>
+</ul>
+</li>
 <li>Does the application cache sensitive data to disk?<ul>
 <li>Does the application take steps to prevent sensitive data in memory from being swapped to disk?</li>
 </ul>
@@ -144,7 +169,7 @@
 </ul>
 </li>
 <li>What sensitive information is exposed if the user has malware?<ul>
-<li>What informaiton can a keylogger or screengrabber see?</li>
+<li>What information can a keylogger or screengrabber see?</li>
 <li>Can the malware access sensitive stored data? (All the time? Some of the time?)</li>
 </ul>
 </li>
@@ -186,6 +211,13 @@
 </li>
 <li>In general, examining an application up to the layer cryptographic library is insufficient, you must go deeper.<ul>
 <li>If the library is OpenSSL, verify they are using it correctly. This is exceptionally difficult, based on how confusing OpenSSL is.<br />
+<ul>
+<li>Resources:<ul>
+<li><a href="https://crypto.stanford.edu/~dabo/pubs/abstracts/ssl-client-bugs.html">https://crypto.stanford.edu/~dabo/pubs/abstracts/ssl-client-bugs.html</a></li>
+<li><a href="https://isecpartners.com/news-events/news/2012/october/the-lurking-menace-of-broken-tls-validation.aspx">https://isecpartners.com/news-events/news/2012/october/the-lurking-menace-of-broken-tls-validation.aspx</a></li>
+</ul>
+</li>
+</ul>
 </li>
 <li>If the library is some other random one like PyCrypto - you should go into the library and make sure the library is doing it right. They often are not.</li>
 <li>The defense of a library against side channel attacks should also be considered.<ul>
@@ -223,7 +255,7 @@
 </ul>
 </li>
 <li>Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?</li>
-<li>Older, but 'as yet unbroken' cryptographic algorithms should be viewed very suspiciously. For example:<ul>
+<li>Older, but 'not yet insecure' cryptographic algorithms should be viewed very suspiciously. For example:<ul>
 <li>TDES, IDEA, SHA-1</li>
 <li>64 Bit Block Ciphers</li>
 <li>RSA PKCS #1 V1.5 Padding</li>
@@ -492,8 +524,9 @@
 <li>Do the OS vendors apply patches that may reduce the security of the application?</li>
 </ul>
 </li>
-<li>Is the software distributed over SSL?<ul>
-<li>Even if the application includes a signature, SSL is an easy defense in depth practice</li>
+<li>Is the software distributed over HTTPS?<ul>
+<li>Even if the application includes a signature, HTTPS is an easy defense in depth practice</li>
+<li>For the purposes intended (easy defense in depth), a self-signed certificate is insufficient</li>
 </ul>
 </li>
 <li>Is the software distributed to mirrors? Does the project have integrity checkers for the mirrors?</li>
@@ -620,6 +653,6 @@
 </li>
 </ul>
 <h1>Acknowledgements</h1>
-<p>It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional thanks to my employer, iSEC Partners, for sponsoring this work.</p>
+<p>It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional feedback was provided by Philipp Winter and Michael Rogers. Finally, thanks to my employer, iSEC Partners, for sponsoring this work.</p>
 <h1>Licensing</h1>
 <p>Licensing information will go here.</p>
