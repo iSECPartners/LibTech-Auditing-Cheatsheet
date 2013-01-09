@@ -18,20 +18,20 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 
 ## Documentation
 
-* Threat Model
-    * If a project has not documented what they intend to protect themselves from, and what they do not intend to protect themselves from - they probably haven't given much thought to what attacks may be possible to defend against and what attacks are not.  
-        * Some example Threat Models:
+* **Threat Model**. Has the project documented what they intend to protect themselves from, and what they do not intend to protect themselves from?
+    * If not, they probably haven't given much thought to what attacks may be possible to defend against and what attacks are not.  
+    * For example: Tor explicitly does not defend against end-to-end correlation: if an attacker can monitor a user (e.g. a user in the US) and the site they are connecting to (e.g. a site hosted at Amazon EC2 East Coast) it's assumed it's game over, and the attacker can de-anonymize the user. No complicated defenses will be taken. For this reason, tagging attacks are also not defended against.
+        * Some other example Threat Models:
             * https://svn.torproject.org/svn/projects/design-paper/tor-design.html#subsec:threat-model
             * https://gitweb.torproject.org/obfsproxy.git/blob/HEAD:/doc/obfs2/threat-model.txt
             * https://www.torproject.org/projects/torbrowser/design/
-    * For example: Tor explicitly does not defend against end-to-end correlation: if an attacker can monitor a user (e.g. a user in the US) and the site they are connecting to (e.g. a site hosted at Amazon EC2 East Coast) it's assumed it's game over, and the attacker can de-anonymize the user. No complicated defenses will be taken. For this reason, tagging attacks are also not defended against.
     * Some common threat model questions:
         * Do you intend to protect against forensic analysis of a disk to determine what activities a user has participated in using the software?
         * Do you intend to protect against forensic analysis of a disk to determine if a user had installed the software (and subsequently uninstalled it)?
         * Do you intend to disguise the use of the software to an adversary who can monitor the user's network connection?
              * If they say "Yes" they are almost certainly unable to accomplish this, and you should be able to find a few ways to break this.
         * Do you intend to disguise the activities of a user using the software from an adversary who can monitor the user's network connection?
-* Protocol Specification
+* Does the application have a **Protocol Specification**?
     * If an application uses a custom protocol, it should be documented to the level that you would feel comfortable producing an interoperating client from _only_ the specification with no reference to the code. Code is not specification. Code comments are not specification.
     * Any deviation from the protocol specification (even if superficial or without security effect) should be noted
     * Anytime the application accepts data that deviates from the specification should probably be noted.
@@ -44,8 +44,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * If code contains comments to these effects, the code should be investigated thoroughly (duh) and there should probably be a corresponding issue in the project's bugtracker.
 * Is project documentation kept up to date?
 * Does the software provide extremely simple, easy-to-understand instructions for use, discouraging bad practices and performing necessary verification checks?
-    * Examples:
-        * https://www.torproject.org/download/download-easy.html.en#warning
+    * Example: https://www.torproject.org/download/download-easy.html.en#warning
 * Are risks documented to users? 
     * Does the software take efforts to explain what the product does and doesn't provide, and under what environments (e.g. corporate) the software grants no protection?
         * Examples: Chrome Incognito mode, Tor
@@ -74,7 +73,8 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 
 ## Network Fingerprinting
 
-* Any permanent settings unique to a client (or customizable) that persist may be used to track users across networks. Even in the case where a setting does not uniquely identify a user, it will partition the user into a subset of all users, reducing all users' anonymity.
+* Any permanent settings unique to a client (or customizable) that persist may be used to track users across networks. 
+    * Even in the case where a setting does not uniquely identify a user, it will partition the user into a subset of all users, reducing all users' anonymity.
     * Some examples to illustrate this topic:
         * A user may enable the Do Not Track header. The user visits a website, and the attacker observes they have set the header. When attempting to track this user in the future, they can assume the user will still have the header set.
         * A banner case: IPv6 addresses. In the initial design, the last /64 of your IP address was calculated from your MAC address. MACs are globally unique, and the odds of anyone else having the same /64 were low. Thus, even moving to the other side of the planet and installing a new operating system would allow your laptop to be correlated by a website operator with IP address logs.
@@ -183,7 +183,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * CBC Mode IV generation and authentication
         * The BEAST attack on SSL
 * Is the application vulnerable to tagging attacks?
-    * _I have a couple blog posts that will go into more detail about this, that will be published soon_
+    * See https://crypto.is/blog/tagging_attacks and https://crypto.is/blog/tagging_attack_on_mixmaster
 * See also Appendix B
 
 ## SSL
@@ -191,7 +191,8 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * Any Lib Tech project should always prefer Ephemeral ciphersuites
     * SSL ciphersuites with 'DHE' in their name provide forward secrecy in the event of a private key compromise/factor.
     * http://googleonlinesecurity.blogspot.com/2011/11/protecting-data-for-long-term-with.html 
-* If the site uses Client Certificates (or really any other form of SSL Authentication: PSK/etc) - do all third party includes also use that form? If not, the authentication is the lesser of all.
+* If the site uses Client Certificates (or really any other form of SSL Authentication: PSK/etc) - do all third party includes also use that form of authentication? 
+    * If not, the authentication is the least secure of all forms of authentication.
 * Pinning
     * If they have a website: do they pin certificate authorities in Chrome's preloaded list? See:
         * http://www.chromium.org/sts 
@@ -337,7 +338,8 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Even if the application includes a signature, HTTPS is an easy defense in depth practice
     * For the purposes intended (easy defense in depth), a self-signed certificate is insufficient
 * Is the software distributed to mirrors? Does the project have integrity checkers for the mirrors?
-* Does the application only allow patches greater than the current version to be applied, to prevent vulnerable-but-validly-signed older versions from being applied?
+* Does the application only allow patches greater than the current version to be applied?
+    * This prevents vulnerable-but-validly-signed older versions from being applied.
 
 
 
