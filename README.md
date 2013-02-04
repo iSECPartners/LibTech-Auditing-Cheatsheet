@@ -328,7 +328,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * Does the application allow itself to be fully proxied, with no network or DNS leaks, for use with Tor? See Appendix A.
 
 ## Secure Software Distribution & Install
-* Does the applicaiton provide safe defaults?
+* Does the application provide safe defaults?
 * Does the application prevent the user from being able to proceed or change settings to make them unsafe?
     * Example: HSTS dictates a user is unable to bypass a certificate error
 * Is the application signed?
@@ -449,4 +449,4 @@ It would be impossible to list the dozens of individuals whose teachings were us
 
 # Licensing
 
-Licensing information will go here.
+This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License: http://creativecommons.org/licenses/by-sa/3.0/
