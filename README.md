@@ -445,7 +445,7 @@ Other resources from the Tor community:
 
 # Acknowledgements
 
-It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional feedback was provided by Philipp Winter and Michael Rogers. Finally, thanks to my employer, iSEC Partners, for sponsoring this work.
+This document was primarily authored by Tom Ritter. It would be impossible to list the dozens of individuals whose teachings were used to create this document.  Peer review of initial versions was provided by Peter Oehlert and Paul Youn of iSEC Partners, as well as David Goulet and Runa Sandvik.  Additional feedback was provided by Philipp Winter and Michael Rogers. Finally, thanks to my employer, iSEC Partners, for sponsoring this work.
 
 # Licensing
 
