@@ -260,7 +260,10 @@
 <li>Large Block constructions like BEAR or LIONESS</li>
 </ul>
 </li>
-<li>Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?</li>
+<li>Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?<ul>
+<li>More guidelines on cryptographic code are available at <a href="https://cryptocoding.net/index.php/Coding_rules">https://cryptocoding.net/index.php/Coding_rules</a></li>
+</ul>
+</li>
 <li>Older, but 'not yet insecure' cryptographic algorithms should be viewed very suspiciously. For example:<ul>
 <li>TDES, IDEA, SHA-1</li>
 <li>64 Bit Block Ciphers</li>
@@ -382,6 +385,27 @@
 <li><em>This is really worth reading and referencing as suggestions are given for ways to accomplish the same thing without leaking the data</em></li>
 </ul>
 </li>
+</ul>
+<h2>Development Best Practices</h2>
+<ul>
+<li>Restrictions on commonly abused functionality, such as preprocessor macros, and over riding variable scope can make it much easier to verify a program's correctness<ul>
+<li>A very restrictive set of programming guidelines (for C) are available from the Jet Propulsion Lab: <a href="http://lars-lab.jpl.nasa.gov/JPL_Coding_Standard_C.pdf">http://lars-lab.jpl.nasa.gov/JPL_Coding_Standard_C.pdf</a></li>
+</ul>
+</li>
+<li>Code that parses files or network protocols must be coded defensively with an abundance of caution - the data should be assumed to be hostile and attacker-controlled (it often is)<ul>
+<li>Any length field should be assumed to be incorrect until validated, incorrectly implemented these often lead to buffer overflows</li>
+<li>Unsigned data types should be used, as the data being parsed is full bytes, even if it is expected to be ASCII</li>
+<li>Rob Graham has done an informative, cursory code review of Silent Circle: <a href="http://erratasec.blogspot.com/2013/02/silent-circle-and-inexperienced.html">http://erratasec.blogspot.com/2013/02/silent-circle-and-inexperienced.html</a></li>
+</ul>
+</li>
+<li>When code was primarily authored or tested on 32-bit systems, subtle errors are likely to be introduced when compiling or running on 64-bit systems.<ul>
+<li>Magic constants are often assumed, such as sizeof(pointer) == 4</li>
+<li>Storing pointers in integers will truncate the top 32 bits</li>
+<li>Bitwise operations may behave differently, especially with sign extension</li>
+<li>Viva64 has blogged about a long list of potential errors with examples: <a href="http://www.viva64.com/en/a/0065/">http://www.viva64.com/en/a/0065/</a></li>
+</ul>
+</li>
+<li>Even in the case of strong testing methods such as branch coverage, bugs may hide due to edge cases such as concurrency, inline arithmetic, or lookup tables or array indexing. For more examples, see: <a href="http://blog.regehr.org/archives/872">http://blog.regehr.org/archives/872</a></li>
 </ul>
 <h2>Web Application Defense in Depth</h2>
 <ul>

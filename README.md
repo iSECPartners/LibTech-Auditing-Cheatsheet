@@ -176,6 +176,7 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Related Key Derivations
     * Large Block constructions like BEAR or LIONESS
 * Does the cryptographic library or operations make use of constant-time algorithms? Do they eliminate data-dependent control flow branches or memory lookups?
+    * More guidelines on cryptographic code are available at https://cryptocoding.net/index.php/Coding_rules
 * Older, but 'not yet insecure' cryptographic algorithms should be viewed very suspiciously. For example:
     * TDES, IDEA, SHA-1
     * 64 Bit Block Ciphers
@@ -247,6 +248,21 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 * _A lot of these come from [Micah Lee's talk at HOPE](https://www.eff.org/sites/default/files/filenode/hope_privacy_tricks.pdf)_
     * _This is really worth reading and referencing as suggestions are given for ways to accomplish the same thing without leaking the data_
 
+## Development Best Practices
+
+* Restrictions on commonly abused functionality, such as preprocessor macros, and over riding variable scope can make it much easier to verify a program's correctness
+    * A very restrictive set of programming guidelines (for C) are available from the Jet Propulsion Lab: http://lars-lab.jpl.nasa.gov/JPL_Coding_Standard_C.pdf
+* Code that parses files or network protocols must be coded defensively with an abundance of caution - the data should be assumed to be hostile and attacker-controlled (it often is)
+    * Any length field should be assumed to be incorrect until validated, incorrectly implemented these often lead to buffer overflows
+    * Unsigned data types should be used, as the data being parsed is full bytes, even if it is expected to be ASCII
+    * Rob Graham has done an informative, cursory code review of Silent Circle: http://erratasec.blogspot.com/2013/02/silent-circle-and-inexperienced.html
+* When code was primarily authored or tested on 32-bit systems, subtle errors are likely to be introduced when compiling or running on 64-bit systems.
+    * Magic constants are often assumed, such as sizeof(pointer) == 4
+    * Storing pointers in integers will truncate the top 32 bits
+    * Bitwise operations may behave differently, especially with sign extension
+    * Viva64 has blogged about a long list of potential errors with examples: http://www.viva64.com/en/a/0065/
+* Even in the case of strong testing methods such as branch coverage, bugs may hide due to edge cases such as concurrency, inline arithmetic, or lookup tables or array indexing. For more examples, see: http://blog.regehr.org/archives/872
+    
 ## Web Application Defense in Depth
 
 * _These items are occasionally logged as bugs, and it may be appropriate to log them as such in a report; but they should be noted as defense in depth techniques that should be used to make exploitation more difficult._
