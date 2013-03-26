@@ -393,6 +393,8 @@ Other resources from the Tor community:
  
 # Appendix B: Cryptographic Attacks Cheat Sheet
 
+This list was largely derived from a collation done by Rafael Turner.
+
 * ECB
     * Block Swapping
     * Data Leakage
