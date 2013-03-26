@@ -164,6 +164,12 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
     * Dropbox [used to/still] de-duplicates data prior to encrypting and uploading. This means you can use Dropbox as an oracle to tell if anyone else has uploaded a document, which could lead to subpoenas to de-anonymize a whistleblower.
     * Applying an error correcting code on plaintext prior to encryption will introduce redundancy into the plaintext.  
         * As a simple example, consider applying a CRC to the plaintext, and transmitting the ciphertext and CRC. The CRC, transmitted in plaintext) reveals something about the plaintext. If you knew or learned part of the plaintext (for example the Word file type and associated .doc standard format) you might be able to derive a software version.
+* Cryptographic Key Generation should be done carefully
+    * Key Generation should generally not be done on device startup, as the device may be in a low or no-entropy state
+    * Should use a blocking source of randomness
+    * Special care should be taken if it is an embedded device or the quality of randomness is suspect
+    * One party should not be able to control a key entirely in a shared-generation scenario
+    * Keys should not be mathematically related, but instead derived through pseurandom mixing functions (hash functions)
 * Obscure or unfamiliar cryptographic constructs should be examined very closely, and likely referred to other consultants or professional cryptographers for second and third looks. These include:
     * Galois Counter Mode (Particularly Tag Length)
     * CBC-MAC

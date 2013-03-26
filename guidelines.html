@@ -245,6 +245,14 @@
 </li>
 </ul>
 </li>
+<li>Cryptographic Key Generation should be done carefully<ul>
+<li>Key Generation should generally not be done on device startup, as the device may be in a low or no-entropy state</li>
+<li>Should use a blocking source of randomness</li>
+<li>Special care should be taken if it is an embedded device or the quality of randomness is suspect</li>
+<li>One party should not be able to control a key entirely in a shared-generation scenario</li>
+<li>Keys should not be mathematically related, but instead derived through pseurandom mixing functions (hash functions)</li>
+</ul>
+</li>
 <li>Obscure or unfamiliar cryptographic constructs should be examined very closely, and likely referred to other consultants or professional cryptographers for second and third looks. These include:<ul>
 <li>Galois Counter Mode (Particularly Tag Length)</li>
 <li>CBC-MAC</li>
