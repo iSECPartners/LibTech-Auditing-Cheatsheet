@@ -370,10 +370,14 @@ A good example of the type of analysis to strive for can be shown in Jacob Appel
 
 # Appendix A: Examining an Application for Proxy Leaks
 
+This provides methodology to set up your computer to alert on any traffic that doesn't go through tor. This is done by configuring a firewall to block all traffic except to pre-chosen Tor bridge nodes. 
+
+The instrucitons presented are fore shorewall (which is an abstraction over IPTables.) A similar guide for IPTables [is posted by Lunar](https://people.debian.org/~lunar/blog/posts/tor_only_outgoing_firewall/) but it does not explicitly alert on traffic, only block it - you'll need to add the alerting.
+
 * Set up a tor bridge on another host in your network/on the internet
 * Boot your client/testing machine from a LiveCD
 * Install Tor, have it point to the bridge
-* Install shorewall (or use iptables, but I don't know the correct iptables commands)
+* Instructions for shorewall:
     * /etc/shorewall/zones:
         <true_pre>
         fw    firewall
